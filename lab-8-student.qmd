@@ -1,10 +1,21 @@
+---
+title: "Lab 8: Fish + Function "
+author: "Karla Buitrago-Yepes"
+format: html
+editor: source
+  markdown: 
+    wrap: 72
+execute: 
+  echo: true
+---
 The goal of this lab is learn more about exploring missing data and writing
 modular code.
 
 ```{r}
 #| label: setup
 
-
+library(tidyverse)
+fish <- read_csv("BlackfootFish.csv")
 ```
 
 ## The Data
@@ -36,6 +47,9 @@ measurement errors.
 
 ```{r}
 #| label: find-missing-values
+fish |>
+  summarize(across(.cols = everything(),
+                   .fn = ~sum(is.na(.x))))
 
 ```
 
@@ -45,7 +59,8 @@ measurement errors.
 
 ```{r}
 #| label: map-missing-values-of-fish
-
+fish|>
+  map_int(.cols=everything(), .f = ~sum(is.na(.x)))
 
 ```
 
@@ -54,6 +69,13 @@ measurement errors.
 
 ```{r}
 #| label: visual-of-missing-values-over-time
+
+fish|>
+  group_by(year, section, trip)|>
+  summarize(na_weight = sum(is.na(weight)))
+
+
+  
 
 ```
 
@@ -79,14 +101,14 @@ fish <- fish |>
   mutate(length = (length - min(length, na.rm = TRUE)) / 
            (max(length, na.rm = TRUE) - min(length, na.rm = TRUE)), 
          weight = (weight - min(weight, na.rm = TRUE)) / 
-           (max(weight, na.rm = TRUE) - min(length, na.rm = TRUE)))
+           (max(weight, na.rm = TRUE) - min(length, na.rm = TRUE)))#error
 ```
 
 This process of duplicating an action multiple times can make it difficult to
 understand the intent of the process. *Additionally, it can make it very difficult to spot mistakes.*
 
 **3. What is the mistake I made in the above rescaling code?**
-
+The variable called for calculating the weight rescaling is wrong when calculating the minimum. 
 
 When you find yourself copy-pasting lines of code, it's time to write a
 function, instead!
@@ -98,6 +120,13 @@ function, instead!
 
 ```{r}
 #| label: write-rescale-function
+
+rescale01<- function(x) {
+  
+  rng<-range(x, na.rm= TRUE)
+  (x-rng[1])/(rng[2]-rng[1])
+  }
+
 
 ```
 
